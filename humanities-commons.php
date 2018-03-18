@@ -2173,9 +2173,20 @@ class Humanities_Commons {
 	public static function hcommons_get_identity_provider( $formatted = true ) {
 
 		if ( function_exists( 'shibboleth_session_active' ) && shibboleth_session_active() ) {
-			//hcommons_write_error_log( 'info', '**********************GET_IDENTITY_PROVIDER********************-' . var_export( $identity_provider, true ) );
+			$saml_cookie = trim( $_COOKIE['_saml_idp'] );
+			$saml_encoded_idps = explode( ' ', $saml_cookie );
+			if ( empty( $saml_encoded_idps ) ) {
+				return false;
+			}
+			$last_idp = base64_decode( array_pop( $saml_encoded_idps ) );
+			if ( strpos( $last_idp, 'proxy.hcommons' ) ) {
+				$last_idp = base64_decode( array_pop( $saml_encoded_idps ) );
+			}
+			if ( empty( $last_idp ) ) {
+				return false;
+			}
 			if ( ! $formatted ) {
-				return $_SERVER['HTTP_SHIB_IDENTITY_PROVIDER'];
+				return $last_idp;
 			}
 			$providers = array ();
 			if ( defined( 'GOOGLE_IDENTITY_PROVIDER' ) ) {
@@ -2190,13 +2201,10 @@ class Humanities_Commons {
 			if ( defined( 'MLA_IDENTITY_PROVIDER' ) ) {
 				$providers[MLA_IDENTITY_PROVIDER] = 'Legacy <em>MLA Commons</em>';
 			}
-			$identity_provider = '';
-			$identity_provider = $_SERVER['HTTP_SHIB_IDENTITY_PROVIDER'];
-
-			if ( empty( $providers[$identity_provider] ) ) {
-				return 'University';
+			if ( empty( $providers[$last_idp] ) ) {
+				return 'Incommon';
 			} else {
-				return $providers[$identity_provider];
+				return $providers[$last_idp];
 			}
 
 		}
