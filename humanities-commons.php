@@ -9,10 +9,10 @@
  */
 
 /**
- * Plugin Name: Humanities Commons
- * Description: Humanities Commons is a set of functions, filters and actions used to support a specific multi-network BuddyPress configuration.
+ * Plugin Name: NEU Commons
+ * Description: NEU Commons is a set of functions, filters and actions used to support a specific multi-network BuddyPress configuration. Forked from Humanities Commons.
  * Version: 1.0
- * Author: MLA
+ * Author: NEU, Tanner Moushey (iWitness Design)
  */
 
 // Exit if accessed directly.
