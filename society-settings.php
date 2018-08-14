@@ -15,12 +15,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 function neu_get_societies() {
 	return apply_filters( 'neu_get_societies', array(
-		'globalresilience' => array(
+		'phd' => array(
 			'labels'        => array(
-				'name'          => 'GR',
-				'singular_name' => 'GR',
+				'name'          => 'PHD',
+				'singular_name' => 'PHD',
 			),
-			'has_directory' => 'globalresilience'
+			'has_directory' => 'phd'
+		),
+		'gse' => array(
+			'labels'        => array(
+				'name'          => 'GSE',
+				'singular_name' => 'GSE',
+			),
+			'has_directory' => 'gse'
 		),
 		'nc'               => array(
 			'labels'        => array(

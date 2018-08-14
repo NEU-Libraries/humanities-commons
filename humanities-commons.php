@@ -2134,6 +2134,11 @@ class Humanities_Commons {
 
 		$memberships       = array();
 		$member_types      = bp_get_member_types();
+
+		if ( empty( $_SERVER['HTTP_ISMEMBEROF'] ) ) {
+			return $memberships;
+		}
+
 		$membership_header = $_SERVER['HTTP_ISMEMBEROF'] . ';';
 		//hcommons_write_error_log( 'info', '**********************GET_MEMBERSHIPS********************-'.var_export( $membership_header, true ).'-'.var_export($member_types,true) );
 
