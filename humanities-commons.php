@@ -20,6 +20,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+require_once( dirname( __FILE__ ) . '/society-settings.php' );
+require_once( dirname( __FILE__ ) . '/wpmn-taxonomy-functions.php' );
+require_once( dirname( __FILE__ ) . '/admin-toolbar.php' );
+require_once( dirname( __FILE__ ) . '/class.comanage-api.php' );
+require_once( dirname( __FILE__ ) . '/class-logger.php' );
+
 use MLA\Commons\Plugin\Logging\Logger;
 
 global $hcommons_logger;
@@ -42,12 +48,6 @@ function hcommons_write_error_log( $error_type, $error_message, $info = null ) {
 		$hcommons_logger->addError( $error_message );
 	}
 }
-
-require_once( dirname( __FILE__ ) . '/society-settings.php' );
-require_once( dirname( __FILE__ ) . '/wpmn-taxonomy-functions.php' );
-require_once( dirname( __FILE__ ) . '/admin-toolbar.php' );
-require_once( dirname( __FILE__ ) . '/class.comanage-api.php' );
-require_once( dirname( __FILE__ ) . '/class-logger.php' );
 
 class Humanities_Commons {
 
@@ -135,16 +135,13 @@ class Humanities_Commons {
 		add_filter( 'site_option_shibboleth_login_url', [ $this, 'hcommons_filter_site_option_shibboleth_urls' ] );
 		add_filter( 'site_option_shibboleth_logout_url', [ $this, 'hcommons_filter_site_option_shibboleth_urls' ] );
 
-		// @todo re-enable once we get Shibboleth setup these require shibboleth
-		/*
-		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_set_user_member_types' ) );
-		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_maybe_set_user_role_for_site' ) );
-		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_set_shibboleth_based_user_meta' ) );
-		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_invite_anyone_activate_user' ) );
+//		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_set_user_member_types' ) );
+//		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_maybe_set_user_role_for_site' ) );
+//		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_set_shibboleth_based_user_meta' ) );
+//		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_invite_anyone_activate_user' ) );
 		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_sync_bp_profile' ) );
 		add_filter( 'shibboleth_user_email', array( $this, 'hcommons_set_shibboleth_based_user_email' ) );
-		add_filter( 'shibboleth_user_role', array( $this, 'hcommons_check_user_site_membership' ) );
-		*/
+//		add_filter( 'shibboleth_user_role', array( $this, 'hcommons_check_user_site_membership' ) );
 
 		add_filter( 'bp_get_signup_page', array( $this, 'hcommons_register_url' ) );
 		add_action( 'pre_user_query', array(
@@ -752,8 +749,8 @@ class Humanities_Commons {
 		hcommons_write_error_log( 'info', '****SYNC_BP_PROFILE****-' . var_export( $user->ID, true ) );
 
 		$current_name = xprofile_get_field_data( 'Name', $user->ID );
-		if ( empty( $current_name ) ) {
-			$name = $_SERVER['HTTP_DISPLAYNAME']; // user record maybe not fully populated for first time users.
+		if ( empty( $current_name ) && isset( $_SERVER['displayName'] ) ) {
+			$name = $_SERVER['displayName']; // user record maybe not fully populated for first time users.
 			if ( ! empty( $name ) ) {
 				xprofile_set_field_data( 'Name', $user->ID, $name );
 			}
@@ -782,14 +779,6 @@ class Humanities_Commons {
 			}
 			if ( ! empty( $org ) ) {
 				xprofile_set_field_data( 'Institutional or Other Affiliation', $user->ID, str_replace( 'Mla', 'MLA', $org ) );
-			}
-		}
-
-		$current_orcid = xprofile_get_field_data( 18, $user->ID );
-		if ( empty( $current_orcid ) ) {
-			$orcid = get_user_meta( $user->ID, 'shib_orcid', true );
-			if ( ! empty( $orcid ) ) {
-				xprofile_set_field_data( 18, $user->ID, $orcid );
 			}
 		}
 
