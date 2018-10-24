@@ -136,6 +136,8 @@ class Humanities_Commons {
 		// make all urls HTTPS
 		add_filter( 'site_option_shibboleth_login_url', [ $this, 'hcommons_filter_site_option_shibboleth_urls' ] );
 		add_filter( 'site_option_shibboleth_logout_url', [ $this, 'hcommons_filter_site_option_shibboleth_urls' ] );
+		add_filter( 'default_site_option_shibboleth_login_url', [ $this, 'default_shibb_login_url' ] );
+		add_filter( 'default_site_option_shibboleth_logout_url', [ $this, 'default_shibb_login_url' ] );
 
 		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_set_user_member_types' ) );
 		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_maybe_set_user_role_for_site' ) );
@@ -1586,6 +1588,14 @@ class Humanities_Commons {
 		$value = str_replace( 'http:', 'https:', $value );
 
 		return $value;
+	}
+
+	public function default_shibb_login_url() {
+		return 'https://northeasterncommons.org/Shibboleth.sso/Login';
+	}
+
+	public function default_shibb_logout_url() {
+		return 'https://neuidmssodev.neu.edu/logout.html';
 	}
 
 	/**
