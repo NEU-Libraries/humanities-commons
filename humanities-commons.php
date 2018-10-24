@@ -128,20 +128,22 @@ class Humanities_Commons {
 
 //		add_action( 'init', array( $this, 'hcommons_shibboleth_autologout' ) );
 		add_action( 'wp_login_failed', array( $this, 'hcommons_login_failed' ) );
-//		add_filter( 'wp_safe_redirect_fallback', array( $this, 'hcommons_remove_admin_redirect' ) );
-//		add_filter( 'login_redirect', array( $this, 'hcommons_remove_admin_redirect' ) );
+		add_filter( 'wp_safe_redirect_fallback', array( $this, 'hcommons_remove_admin_redirect' ) );
+		add_filter( 'login_redirect', array( $this, 'hcommons_remove_admin_redirect' ) );
 		add_filter( 'shibboleth_session_active', array( $this, 'hcommons_shibboleth_session_active' ) );
 //		add_action( 'login_init', array( $this, 'hcommons_login_init' ) );
+
+		// make all urls HTTPS
 		add_filter( 'site_option_shibboleth_login_url', [ $this, 'hcommons_filter_site_option_shibboleth_urls' ] );
 		add_filter( 'site_option_shibboleth_logout_url', [ $this, 'hcommons_filter_site_option_shibboleth_urls' ] );
 
-//		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_set_user_member_types' ) );
-//		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_maybe_set_user_role_for_site' ) );
+		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_set_user_member_types' ) );
+		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_maybe_set_user_role_for_site' ) );
 //		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_set_shibboleth_based_user_meta' ) );
-//		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_invite_anyone_activate_user' ) );
-		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_sync_bp_profile' ) );
+		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_invite_anyone_activate_user' ) );
+//		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_sync_bp_profile' ) );
 		add_filter( 'shibboleth_user_email', array( $this, 'hcommons_set_shibboleth_based_user_email' ) );
-//		add_filter( 'shibboleth_user_role', array( $this, 'hcommons_check_user_site_membership' ) );
+		add_filter( 'shibboleth_user_role', array( $this, 'hcommons_check_user_site_membership' ) );
 
 		add_filter( 'bp_get_signup_page', array( $this, 'hcommons_register_url' ) );
 		add_action( 'pre_user_query', array(
@@ -553,31 +555,33 @@ class Humanities_Commons {
 		}
 	}
 
+	/**
+	 * Set membership type for Shib user
+	 *
+	 * @param $user
+	 *
+	 * @author Tanner Moushey
+	 */
 	public function hcommons_set_user_member_types( $user ) {
 
 		$user_id = $user->ID;
 
-		$shib_session_id = get_user_meta( $user_id, 'shib_session_id', true );
-		/*
-				if ( $shib_session_id == self::$shib_session_id ) {
-					hcommons_write_error_log( 'info', '****SET_USER_MEMBER_TYPES_OUT****-' . var_export( $shib_session_id, true ) );
-					return;
-				}
-		*/
 		$memberships = $this->hcommons_get_user_memberships();
 		hcommons_write_error_log( 'info', '****RETURNED_MEMBERSHIPS****-' . $_SERVER['HTTP_HOST'] . '-' . var_export( $user->user_login, true ) . '-' . var_export( $memberships, true ) );
 		$member_societies = (array) bp_get_member_type( $user_id, false );
 		hcommons_write_error_log( 'info', '****PRE_SET_USER_MEMBER_TYPES****-' . var_export( $member_societies, true ) );
-		$result = bp_set_member_type( $user_id, '' ); // Clear existing types, if any.
-		$append = true;
+
+		bp_set_member_type( $user_id, '' ); // Clear existing types, if any.
+
 		foreach ( $memberships['societies'] as $member_type ) {
-			$result = bp_set_member_type( $user_id, $member_type, $append );
+			$result = bp_set_member_type( $user_id, $member_type, true );
 			hcommons_write_error_log( 'info', '****SET_EACH_MEMBER_TYPE****-' . $user_id . '-' . $member_type . '-' . var_export( $result, true ) );
 		}
 
 		//If site is a society we are mapping groups for and the user is member of the society, map any groups from comanage to wp.
 		//TODO add logic to remove groups the user is no longer a member of
-		if ( in_array( self::$society_id, array( 'gr' ) ) &&
+		// Disabled for now
+		if ( 0 && in_array( self::$society_id, array( 'gr' ) ) &&
 		     in_array( self::$society_id, $memberships['societies'] )
 		) {
 			foreach ( $memberships['groups'][ self::$society_id ] as $group_name ) {
@@ -1188,7 +1192,6 @@ class Humanities_Commons {
 		$username = $_SERVER['HTTP_EMPLOYEENUMBER'];
 
 		$user                = get_user_by( 'login', $username );
-		$user_id             = $user->ID;
 		$global_super_admins = array();
 		if ( defined( 'GLOBAL_SUPER_ADMINS' ) ) {
 			$global_super_admin_list = constant( 'GLOBAL_SUPER_ADMINS' );
@@ -1196,10 +1199,13 @@ class Humanities_Commons {
 		}
 		$memberships      = $this->hcommons_get_user_memberships();
 		$member_societies = (array) $memberships['societies'];
-		if ( ! in_array( self::$society_id, $member_societies ) && ! in_array( $user->user_login, $global_super_admins ) ) {
-			hcommons_write_error_log( 'info', '****CHECK_USER_SITE_MEMBERSHIP_FAIL****-' . var_export( $memberships['societies'], true ) .
-			                                  var_export( self::$society_id, true ) . var_export( $user, true ) );
 
+		// if the member is not a member of this society, return an empty string for user role
+		if (
+			! in_array( self::$society_id, $member_societies ) &&
+			! in_array( $user->user_login, $global_super_admins )
+		) {
+			hcommons_write_error_log( 'info', '****CHECK_USER_SITE_MEMBERSHIP_FAIL****-' . var_export( $memberships['societies'], true ) . var_export( self::$society_id, true ) . var_export( $user, true ) );
 			return '';
 		}
 
@@ -1521,12 +1527,38 @@ class Humanities_Commons {
 	 * @return string $location Modified url
 	 */
 	public function hcommons_remove_admin_redirect( $location ) {
-		if (
-			isset( $_REQUEST['action'] ) &&
-			'shibboleth' === $_REQUEST['action'] &&
-			strpos( $location, 'wp-admin' ) !== false
-		) {
+		if ( empty( $_REQUEST['action'] ) || 'shibboleth' !== $_REQUEST['action'] ) {
+			return $location;
+		}
+
+		if ( strpos( $location, 'wp-admin' ) !== false ) {
 			$location = get_site_url();
+		}
+
+		$membership = $this->hcommons_get_user_memberships();
+
+		if ( empty( $membership['societies'] ) ) {
+			return $location;
+		}
+
+		global $wpdb;
+		$societies = $wpdb->get_results("SELECT * FROM $wpdb->sitemeta WHERE meta_key = 'society_id'" );
+
+		if ( empty( $societies ) || is_wp_error( $societies ) ) {
+			return $location;
+		}
+
+		$societies = wp_list_pluck( $societies, 'site_id', 'meta_value' );
+
+		// don't redirect to the commons site
+		unset( $societies['nc'] );
+
+		foreach( $societies as $society => $site_id ) {
+			if ( in_array( $society, $membership['societies'] ) ) {
+				$network = get_network( $site_id );
+				$location = apply_filters( 'network_home_url', 'https://' . $network->domain . $network->path, '', null );
+				break;
+			}
 		}
 
 		return $location;
@@ -2121,29 +2153,30 @@ class Humanities_Commons {
 	 */
 	public static function hcommons_get_user_memberships() {
 
-		$memberships       = array();
-		$member_types      = bp_get_member_types();
+		$memberships       = [
+			'societies' => [],
+			'groups'    => [],
+		];
 
-		if ( empty( $_SERVER['HTTP_ISMEMBEROF'] ) ) {
-			return $memberships;
+		if ( empty( $_SERVER['STU_DEGREE'] ) ) {
+			return [];
 		}
 
-		$membership_header = $_SERVER['HTTP_ISMEMBEROF'] . ';';
+		$gse_degrees = [ 'EDD' ];
+		$php_degrees = [ 'AUD', 'DLP','DNP','DPT', 'PHARMD', 'PHD' ];
+
+		$membership_header = $_SERVER['STU_DEGREE'];
 		//hcommons_write_error_log( 'info', '**********************GET_MEMBERSHIPS********************-'.var_export( $membership_header, true ).'-'.var_export($member_types,true) );
 
-		foreach ( $member_types as $key => $value ) {
+		// everyone is part of the main site
+		$memberships['societies'][] = 'nc';
 
-			$pattern = sprintf( '/Humanities Commons:%1$s:members_%1$s;/', strtoupper( $key ) );
-			if ( preg_match( $pattern, $membership_header, $matches ) ) {
-				$memberships['societies'][] = $key;
-			}
+		if ( in_array( $membership_header, $gse_degrees ) ) {
+			$memberships['societies'][] = 'gse';
+		}
 
-			$pattern = sprintf( '/Humanities Commons:%1$s_(.*?);/', strtoupper( $key ) );
-			if ( preg_match_all( $pattern, $membership_header, $matches ) ) {
-				//hcommons_write_error_log( 'info', '****GET_MATCHES****-'.$key.'-'.var_export( $matches, true ) );
-				$memberships['groups'][ $key ] = $matches[1];
-			}
-
+		if ( in_array( $membership_header, $php_degrees ) ) {
+			$memberships['societies'][] = 'phd';
 		}
 
 		return $memberships;
