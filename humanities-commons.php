@@ -1561,7 +1561,8 @@ class Humanities_Commons {
 			}
 		}
 
-		return $location;
+		wp_redirect( $location );
+		exit();
 	}
 
 	/**
