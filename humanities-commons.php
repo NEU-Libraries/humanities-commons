@@ -2165,12 +2165,12 @@ class Humanities_Commons {
 	public static function hcommons_get_user_memberships() {
 
 		$memberships       = [
-			'societies' => [],
+			'societies' => [ 'nc' ], // everyone is part of the main site
 			'groups'    => [],
 		];
 
 		if ( empty( $_SERVER['STU_DEGREE'] ) ) {
-			return [];
+			return $memberships;
 		}
 
 		$gse_degrees = [ 'EDD' ];
@@ -2178,9 +2178,6 @@ class Humanities_Commons {
 
 		$membership_header = $_SERVER['STU_DEGREE'];
 		//hcommons_write_error_log( 'info', '**********************GET_MEMBERSHIPS********************-'.var_export( $membership_header, true ).'-'.var_export($member_types,true) );
-
-		// everyone is part of the main site
-		$memberships['societies'][] = 'nc';
 
 		if ( in_array( $membership_header, $gse_degrees ) ) {
 			$memberships['societies'][] = 'gse';
