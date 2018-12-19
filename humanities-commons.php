@@ -1595,7 +1595,7 @@ class Humanities_Commons {
 	}
 
 	public function default_shibb_logout_url() {
-		return 'https://neuidmssodev.neu.edu/logout.html';
+		return 'https://northeasterncommons.org/logout';
 	}
 
 	/**
