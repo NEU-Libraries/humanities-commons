@@ -139,6 +139,10 @@ class Humanities_Commons {
 		add_filter( 'default_site_option_shibboleth_login_url', [ $this, 'default_shibb_login_url' ] );
 		add_filter( 'default_site_option_shibboleth_logout_url', [ $this, 'default_shibb_logout_url' ] );
 
+		add_filter( 'logout_url', function( $url ) {
+			return 'https://northeasterncommons.org/logout';
+		} );
+
 		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_set_user_member_types' ) );
 		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_maybe_set_user_role_for_site' ) );
 //		add_action( 'shibboleth_set_user_roles', array( $this, 'hcommons_set_shibboleth_based_user_meta' ) );
