@@ -29,6 +29,13 @@ function neu_get_societies() {
 			),
 			'has_directory' => 'gse'
 		),
+		'next' => array(
+			'labels'        => array(
+				'name'          => 'NExT',
+				'singular_name' => 'NExT',
+			),
+			'has_directory' => 'next'
+		),
 		'nc'               => array(
 			'labels'        => array(
 				'name'          => 'NC',
