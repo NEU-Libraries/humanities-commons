@@ -163,7 +163,7 @@ class Humanities_Commons {
 		add_filter( 'bbp_reply_admin_links', array( $this, 'hcommons_reply_admin_links' ), 10, 2 );
 		add_filter( 'bp_activity_time_since', array( $this, 'hcommons_filter_activity_time_since' ), 10, 2 );
 		add_filter( 'bp_attachments_cover_image_upload_dir', array( $this, 'hcommons_cover_image_upload_dir' ), 10, 2 );
-		add_filter( 'bp_attachments_uploads_dir_get', array( $this, 'hcommons_attachments_uploads_dir_get' ), 10, 2 );
+		add_action( 'bp_setup_globals', array( $this, 'hcommons_attachments_uploads_dir_get' ), 9 );
 		add_filter( 'bp_attachment_upload_dir', array( $this, 'hcommons_attachment_upload_dir' ), 10, 2 );
 
 		// replace default bbp notification formatter with our own multinetwork-compatible version
@@ -1794,29 +1794,46 @@ class Humanities_Commons {
 	 *
 	 * @since HCommons
 	 *
-	 * @param string|array $retval
-	 * @param string       $data
-	 *
-	 * @return string|array $retval
 	 */
-	public function hcommons_attachments_uploads_dir_get( $retval, $data ) {
+	public function hcommons_attachments_uploads_dir_get() {
+		$bp = buddypress();
 
-		//hcommons_write_error_log( 'info', '****BP_CORE_ATTACHMENTS_UPLOADS_DIR_GET_BEFORE****-'.var_export( $retval, true ).'-'.var_export( $data, true ) );
-
-		if ( empty( $data ) ) {
-			$basedir = preg_replace( '~/sites/\d+/~', '/', $retval['basedir'] );
-			if ( ! empty( $basedir ) ) {
-				$retval['basedir'] = $basedir;
-			}
-			$baseurl = preg_replace( '~/sites/\d+/~', '/', $retval['baseurl'] );
-			if ( ! empty( $baseurl ) ) {
-				$retval['baseurl'] = $baseurl;
-			}
+		if ( ! empty( $bp->upload_dir ) ) {
+			return;
 		}
 
-		//hcommons_write_error_log( 'info', '****BP_CORE_ATTACHMENTS_UPLOADS_DIR_GET_AFTER****-'.var_export( $retval, true ).'-'.var_export( $data, true ) );
+		$need_switch = (bool) ( is_multisite() && HC_ROOT_BLOG_ID != bp_get_root_blog_id() );
 
-		return $retval;
+		// Maybe juggle to root blog.
+		if ( $need_switch ) {
+			switch_to_blog( HC_ROOT_BLOG_ID );
+		}
+
+		// Get the upload directory (maybe for root blog).
+		$wp_upload_dir = wp_upload_dir();
+
+		// Maybe juggle back to current blog.
+		if ( $need_switch ) {
+			restore_current_blog();
+		}
+
+		// Bail if an error occurred.
+		if ( ! empty( $wp_upload_dir['error'] ) ) {
+			return false;
+		}
+
+		// don't use site specific folders for BP.
+		$basedir = preg_replace( '~/sites/\d+~', '/', $wp_upload_dir['basedir'] );
+		if ( ! empty( $basedir ) ) {
+			$wp_upload_dir['basedir'] = $basedir;
+		}
+
+		$baseurl = preg_replace( '~/sites/\d+~', '/', $wp_upload_dir['baseurl'] );
+		if ( ! empty( $baseurl ) ) {
+			$wp_upload_dir['baseurl'] = $baseurl;
+		}
+
+		$bp->upload_dir = $wp_upload_dir;
 	}
 
 	/**
