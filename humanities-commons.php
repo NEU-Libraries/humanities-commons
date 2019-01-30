@@ -435,7 +435,7 @@ class Humanities_Commons {
 
 	public function hcommons_set_groups_query_args( $args ) {
 		// profile loops per-type, leave as-is
-		if ( bp_is_user_profile() || is_network_admin() ) {
+		if ( bp_is_user_profile() || is_network_admin() || bp_is_current_component( 'settings' ) ) {
 			return $args;
 		}
 
