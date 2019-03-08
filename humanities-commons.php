@@ -2194,7 +2194,7 @@ class Humanities_Commons {
 			switch ( $_SERVER['eduPersonaffilation'] ) {
 				case 'staff'  :
 				case 'faculty'  :
-					$memberships['societies'][] = ['gse'];
+					$memberships['societies'][] = 'gse';
 
 					if ( 'next' === self::$society_id ) {
 						$memberships['societies'][] = 'next';
@@ -2202,7 +2202,7 @@ class Humanities_Commons {
 					break;
 				case 'student'  :
 					if ( 'next' === self::$society_id ) {
-						$memberships['societies'] = ['next'];
+						$memberships['societies'][] = 'next';
 					}
 					break;
 			}
