@@ -1686,7 +1686,7 @@ class Humanities_Commons {
 	 */
 	public function hcommons_topic_admin_links( $array, $id ) {
 
-		$cap = groups_filter_bbpress_caps( 'bp_moderate' );
+		$cap = bp_current_user_can( 'bp_moderate' ); // groups_filter_bbpress_caps( 'bp_moderate' );
 
 		$user = wp_get_current_user();
 
@@ -2190,6 +2190,24 @@ class Humanities_Commons {
 			'groups'    => [],
 		];
 
+		if ( ! empty( $_SERVER['eduPersonaffilation'] ) ) {
+			switch ( $_SERVER['eduPersonaffilation'] ) {
+				case 'staff'  :
+				case 'faculty'  :
+					$memberships['societies'][] = ['gse'];
+
+					if ( 'next' === self::$society_id ) {
+						$memberships['societies'][] = 'next';
+					}
+					break;
+				case 'student'  :
+					if ( 'next' === self::$society_id ) {
+						$memberships['societies'] = ['next'];
+					}
+					break;
+			}
+		}
+
 		if ( empty( $_SERVER['STU_DEGREE'] ) ) {
 			return $memberships;
 		}
@@ -2207,6 +2225,9 @@ class Humanities_Commons {
 		if ( in_array( $membership_header, $php_degrees ) ) {
 			$memberships['societies'][] = 'phd';
 		}
+
+		// remove any duplicates
+		$memberships['societies'] = array_unique( $memberships['societies'] );
 
 		return $memberships;
 	}
