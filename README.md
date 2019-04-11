@@ -1,6 +1,6 @@
 # Northeastern Commons
 
-This is a WordPress plugin to implement BuddyPress functions, filters and actions for the [Northeastern Commons](https://northeasterncommons.org) multi-network setup. There is a separate repository for the HC WordPress application using this plugin: [NEU-Library/northeasterncommons](https://github.com/NEU-Library/northeasterncommons).
+This is a WordPress plugin to implement BuddyPress functions, filters and actions for the [Northeastern Commons](https://northeasterncommons.org) multi-network setup. There is a separate repository for the HC WordPress application using this plugin: [NEU-Libraries/northeasterncommons](https://github.com/NEU-Library/northeasterncommons).
 
 ## Required Dependencies
 
