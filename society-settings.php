@@ -43,6 +43,13 @@ function neu_get_societies() {
 			),
 			'has_directory' => 'nc'
 		),
+		'gradstudentnetwork'               => array(
+			'labels'        => array(
+				'name'          => 'gradstudentnetwork',
+				'singular_name' => 'gradstudentnetwork',
+			),
+			'has_directory' => 'gradstudentnetwork'
+		),
 	) );
 }
 
