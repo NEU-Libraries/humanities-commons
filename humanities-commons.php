@@ -2214,6 +2214,7 @@ class Humanities_Commons {
 
 		$gse_degrees = [ 'EDD' ];
 		$php_degrees = [ 'AUD', 'DLP','DNP','DPT', 'PHARMD', 'PHD' ];
+		$gradstudentnetwork_degrees = [ 'gradstudentnetwork' ];
 
 		$membership_header = $_SERVER['STU_DEGREE'];
 		//hcommons_write_error_log( 'info', '**********************GET_MEMBERSHIPS********************-'.var_export( $membership_header, true ).'-'.var_export($member_types,true) );
@@ -2224,6 +2225,9 @@ class Humanities_Commons {
 
 		if ( in_array( $membership_header, $php_degrees ) ) {
 			$memberships['societies'][] = 'phd';
+		}
+		if ( in_array( $membership_header, $gradstudentnetwork_degrees ) ) {
+			$memberships['societies'][] = 'gradstudentnetwork';
 		}
 
 		// remove any duplicates
