@@ -2225,7 +2225,9 @@ class Humanities_Commons {
 		if ( in_array( $membership_header, $php_degrees ) ) {
 			$memberships['societies'][] = 'phd';
 		}
-
+		if ( isset( $_SERVER['Level'] ) && $_SERVER['Level'] == 'gradstudentnetwork' )  {
+		$memberships['societies'][] = 'gr';
+		}
 		// remove any duplicates
 		$memberships['societies'] = array_unique( $memberships['societies'] );
 
